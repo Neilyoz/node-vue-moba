@@ -19,8 +19,9 @@
             <el-form-item label="图标" style="margin-top: .5rem;">
               <el-upload
                 class="avatar-uploader"
-                :action="$http.defaults.baseURL + '/upload'"
+                :action="uploadUrl"
                 :show-file-list="false"
+                :headers="getAuthHeaders()"
                 :on-success="res => $set(item, 'image', res.url)">
                 <img v-if="item.image" :src="item.image" class="avatar">
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>

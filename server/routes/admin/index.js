@@ -40,28 +40,17 @@ module.exports = app => {
   })
 
   // 登录校验中间件
-  const authMiddleware = async (req, res, next) => {
-    const token = String(req.headers.authorization || '').split(' ').pop()
-    assert(token, 401, '请先登录')
-    const { id } = jwt.verify(token, app.get('secret'))
-    assert(token, 401, '请先登录')
-    const user = AdminUser.findById(id)
-    assert(user, 401, '请先登录')
-    req.user = user
-    await next()
-  }
+  const authMiddleware = require('../../middleware/auth')
 
-  app.use('/admin/api/rest/:resource', authMiddleware, async (req, res, next) => {
-    const modelName = require('inflection').classify(req.params.resource)
-    req.Model = require(`../../models/${modelName}`)
-    next()
-  }, router)
+  const resourceMiddleware = require('../../middleware/resource')
+
+  app.use('/admin/api/rest/:resource', authMiddleware(), resourceMiddleware(), router)
 
   // 上传相关操作
   const multer = require('multer')
   const upload = multer({ dest: __dirname + '/../../uploads' })
 
-  app.post('/admin/api/upload', upload.single('file'), async (req, res) => {
+  app.post('/admin/api/upload', authMiddleware(), upload.single('file'), async (req, res) => {
     const file = req.file
     file.url = `http://localhost:3000/uploads/${file.filename}`
     res.send(file)
